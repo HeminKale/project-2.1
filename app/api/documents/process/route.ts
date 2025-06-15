@@ -5,10 +5,29 @@ import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function POST(request: Request) {
   try {
+    // Extract the authorization token from the request headers
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json(
+        { error: 'Authorization token required' },
+        { status: 401 }
+      );
+    }
+
+    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
+
+    // Create Supabase client with the user's session token
+    const supabase = createClient(supabaseUrl, supabaseKey, {
+      global: {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    });
+
     const { clientId, fileUrl } = await request.json();
     console.log('API: Received request for client:', clientId, 'file:', fileUrl);
 
@@ -178,4 +197,4 @@ export async function POST(request: Request) {
 function extractField(text: string, pattern: RegExp): string {
   const match = text.match(pattern);
   return match ? match[1].trim() : '';
-} 
+}

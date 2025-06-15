@@ -7,6 +7,7 @@ import { useAuth } from '@/app/components/AuthProvider';
 
 interface ApplicationFormManagerProps {
   clientId: string;
+  clientName: string;
   onDraftGenerated: (draftUrl: string) => void;
 }
 
@@ -31,7 +32,7 @@ interface ApplicationFormData {
   employee3_designation: string;
 }
 
-export default function ApplicationFormManager({ clientId, onDraftGenerated }: ApplicationFormManagerProps) {
+export default function ApplicationFormManager({ clientId, clientName, onDraftGenerated }: ApplicationFormManagerProps) {
   const [uploading, setUploading] = useState(false);
   const [generatingDraft, setGeneratingDraft] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -112,15 +113,20 @@ export default function ApplicationFormManager({ clientId, onDraftGenerated }: A
         throw new Error('Please upload an application form first');
       }
 
-      // Call our document processing API
+      if (!user?.session?.access_token) {
+        throw new Error('Authentication token not available');
+      }
+
+      // Call our document processing API with authentication token
       const response = await fetch('/api/documents/process', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user.session.access_token}`,
         },
         body: JSON.stringify({
           clientId,
-          fileName: uploadedDocxFileName,
+          fileUrl: uploadedDocxFileName,
         }),
       });
 
@@ -188,4 +194,4 @@ export default function ApplicationFormManager({ clientId, onDraftGenerated }: A
       )}
     </div>
   );
-} 
+}
