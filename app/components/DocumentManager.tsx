@@ -86,11 +86,11 @@ export default function DocumentManager({ clientId, clientName, onDocumentUpload
     }
   };
 
-  const handleDownload = (document: Document) => {
+  const handleDownload = (docToDownload: Document) => {
     // Simulate download (replace with actual download logic)
     const link = document.createElement('a');
     link.href = '#'; // Replace with actual file URL
-    link.download = document.filename;
+    link.download = docToDownload.filename;
     link.click();
   };
 
